@@ -1,3 +1,8 @@
+using GTranslateLocalizatorApp.Services;
+using GTranslateLocalizatorApp.Services.Contracts;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+
 namespace GTranslateLocalizatorApp
 {
     internal static class Program
@@ -8,10 +13,24 @@ namespace GTranslateLocalizatorApp
         [STAThread]
         static void Main()
         {
-            // To customize application configuration such as set high DPI settings or default font,
-            // see https://aka.ms/applicationconfiguration.
-            ApplicationConfiguration.Initialize();
-            Application.Run(new mainForm());
+            IHost host = CreateHostBuilder().Build();
+            IServiceScope serviceScope = host.Services.CreateScope();
+            IServiceProvider services = serviceScope.ServiceProvider;
+
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+
+            Application.Run(services.GetRequiredService<mainForm>());
+        }
+
+        static IHostBuilder CreateHostBuilder()
+        {
+            return Host.CreateDefaultBuilder()
+                .ConfigureServices((context, services) => {
+                    services.AddScoped<ITranslationLibraryService, TranslationLibraryService>();
+                    services.AddScoped<IFileXmlService, FileXmlService>();
+                    services.AddScoped<mainForm>();
+                });
         }
     }
 }

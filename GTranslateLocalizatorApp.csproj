@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="GTranslate" Version="2.1.6" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
   </ItemGroup>
 
 </Project>
