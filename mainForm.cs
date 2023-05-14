@@ -9,11 +9,24 @@ namespace GTranslateLocalizatorApp
     using GTranslate.Translators;
     using GTranslate.Results;
 
+    struct TranslationLibrary
+    {
+        public string Language;
+        public Dictionary<string, string> Translations;
+
+        public TranslationLibrary(string language, Dictionary<string, string> translations)
+        {
+            Language = language;
+            Translations = translations;
+        }
+    }
+
     public partial class mainForm : Form
     {
-        private Dictionary<string, string> sourceLib = new Dictionary<string, string>();
+        private TranslationLibrary sourceLibrary;
+        private List<TranslationLibrary> translatedLibraries = new();
+
         private List<string> translateLanguages = new();
-        private Dictionary<string, XmlDocument> translated = new Dictionary<string, XmlDocument>();
 
         private const string FROM_LANGUAGE_BASE = "Russian";
 
@@ -30,52 +43,52 @@ namespace GTranslateLocalizatorApp
                 sourceFileTextBox.Text = openFileDialog.FileName;
                 XmlDocument doc = new XmlDocument();
                 doc.Load(openFileDialog.FileName);
-                InitFile(doc);
+                sourceLibrary = InitFile(doc);
+                generateButton.Enabled = true;
             }
         }
 
         private void generateButton_Click(object sender, EventArgs e)
         {
-            string sourceLanguage = sourceComboBox.SelectedItem.ToString();
-
-            translated = new Dictionary<string, XmlDocument>();
             foreach (string destinationLanguage in translateLanguages)
             {
                 if (destinationLanguage != string.Empty)
                 {
-                    DebugLog(destinationLanguage);
-                    Dictionary<string, string> translatedLib = TranslateDictionary(sourceLib, sourceLanguage, destinationLanguage);
-                    translated.Add(destinationLanguage, ConvertXML(translatedLib));
+                    translatedLibraries.Add(TranslateLibrary(sourceLibrary, destinationLanguage));
                 }
                 else
                     DebugLog("Unknown value " + destinationLanguage);
             }
+            ShowTranslations();
+            saveButton.Enabled = true;
         }
 
         private void saveButton_Click(object sender, EventArgs e)
         {
             string filePath = openFileDialog.FileName.Replace(openFileDialog.SafeFileName, "");
-            foreach (KeyValuePair<string, XmlDocument> xmlDocument in translated)
+            foreach (TranslationLibrary translationLibrary in translatedLibraries)
             {
-                string fileName = $"{filePath}\\{xmlDocument.Key}.xml";
-                xmlDocument.Value.Save(fileName);
+                XmlDocument xmlDocument = ConvertXML(translationLibrary);
+                string fileName = $"{filePath}\\{translationLibrary.Language}.xml";
+                xmlDocument.Save(fileName);
             }
             DebugLog("Saving succesfully!");
         }
 
-        private Dictionary<string, string> TranslateDictionary(Dictionary<string, string> sourceLib, string sourceLanguage, string destinationLanguage)
+        private TranslationLibrary TranslateLibrary(TranslationLibrary sourceLibrary, string destinationLanguage)
         {
             var translator = new AggregateTranslator();
-            Dictionary<string, string> translatedLib = new Dictionary<string, string>();
+            Dictionary<string, string> translatedLibrary = new Dictionary<string, string>();
 
-            foreach (KeyValuePair<string, string> pair in sourceLib)
+            string sourceLanguage = sourceLibrary.Language;
+            foreach (KeyValuePair<string, string> translations in sourceLibrary.Translations)
             {
-                string translated = TranslateString(pair.Value, sourceLanguage, destinationLanguage);
-                DebugLog(translated);
-                translatedLib.Add(pair.Key, translated);
+                string translated = TranslateString(translations.Value, sourceLanguage, destinationLanguage);
+                translatedLibrary.Add(translations.Key, translated);
+                DebugLog($"{sourceLanguage}: \"{translations.Value}\" translated to {destinationLanguage}: \"{translated}\" ");
             }
 
-            return translatedLib;
+            return new TranslationLibrary(destinationLanguage, translatedLibrary);
         }
 
         private string TranslateString(string sourceString, string sourceLanguage, string destinationLanguage)
@@ -117,42 +130,64 @@ namespace GTranslateLocalizatorApp
             }
         }
 
-        private void InitFile(XmlDocument file)
+        private void ShowTranslations()
         {
+            translationsTabControl.TabPages.Clear();
+            DrawTab(sourceLibrary);
+            foreach (TranslationLibrary translationLibrary in translatedLibraries)
+            {
+                DrawTab(translationLibrary);
+            }
+        }
+
+        private void DrawTab(TranslationLibrary translationLibrary)
+        {
+            var tabPage = new TabPage(translationLibrary.Language);
+            var dataGridView = new DataGridView
+            {
+                Dock = DockStyle.Fill,
+                DataSource = new BindingSource(translationLibrary.Translations, null)
+            };
+            dataGridView.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            tabPage.Controls.Add(dataGridView);
+            translationsTabControl.TabPages.Add(tabPage);
+        }
+
+        private TranslationLibrary InitFile(XmlDocument file)
+        {
+            Dictionary<string, string> sourceLibrary = new();
+
             XmlElement root = file.DocumentElement;
             XmlNodeList nodes = root.SelectNodes("//string");
 
             foreach (XmlNode node in nodes)
             {
                 string key = node.Attributes["name"].Value;
-                if (!sourceLib.ContainsKey(key))
-                    sourceLib.Add(key, node.InnerText);
+                if (!sourceLibrary.ContainsKey(key))
+                    sourceLibrary.Add(key, node.InnerText);
 
             }
-            DebugLog("Library is loaded! Total string count is: " + sourceLib.Count);
+            DebugLog("Library is loaded! Total string count is: " + sourceLibrary.Count);
+
+            string sourceLanguage = sourceComboBox.SelectedItem.ToString();
+            return new TranslationLibrary(sourceLanguage, sourceLibrary);
         }
 
-        private XmlDocument ConvertXML(Dictionary<string, string> saveLib)
+        private XmlDocument ConvertXML(TranslationLibrary translationLibrary)
         {
+            XmlDocument xmlDocument = new XmlDocument();
+            XmlElement rootElement = xmlDocument.CreateElement("root");
+            xmlDocument.AppendChild(rootElement);
 
-            // Создаем XML документ и корневой элемент
-            XmlDocument xmlDoc = new XmlDocument();
-            XmlElement rootElement = xmlDoc.CreateElement("root");
-            xmlDoc.AppendChild(rootElement);
-
-            // Преобразуем Dictionary в XML элементы
-            foreach (var pair in saveLib)
+            foreach (KeyValuePair<string, string> translations in translationLibrary.Translations)
             {
-                XmlElement element = xmlDoc.CreateElement("string");
-                element.SetAttribute("name", pair.Key);
-                element.InnerText = pair.Value;
+                XmlElement element = xmlDocument.CreateElement("string");
+                element.SetAttribute("name", translations.Key);
+                element.InnerText = translations.Value;
                 rootElement.AppendChild(element);
             }
 
-            //// Сохраняем XML документ в файл
-            //string fileName = "dictionary.xml";
-            //xmlDoc.Save(fileName);
-            return xmlDoc;
+            return xmlDocument;
         }
 
         private void DebugLog(string logText)
