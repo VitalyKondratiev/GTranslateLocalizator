@@ -104,9 +104,20 @@ namespace GTranslateLocalizatorApp
                 Dock = DockStyle.Fill,
                 DataSource = new BindingSource(translationLibrary.Translations, null)
             };
+
+            dataGridView.AutoGenerateColumns = false;
+            DataGridViewTextBoxColumn keyColumn = new DataGridViewTextBoxColumn();
+            keyColumn.DataPropertyName = "Key";
+            keyColumn.Width = 150;
+            dataGridView.Columns.Add(keyColumn);
+            DataGridViewTextBoxColumn valueColumn = new DataGridViewTextBoxColumn();
+            valueColumn.DataPropertyName = "Value";
+            valueColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            dataGridView.Columns.Add(valueColumn);
+
             dataGridView.ColumnHeadersVisible = false;
+            dataGridView.AllowUserToResizeColumns = false;
             dataGridView.RowHeadersVisible = false;
-            dataGridView.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             tabPage.Controls.Add(dataGridView);
             translationsTabControl.TabPages.Add(tabPage);
         }
