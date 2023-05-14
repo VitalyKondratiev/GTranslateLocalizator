@@ -22,6 +22,7 @@ namespace GTranslateLocalizatorApp.Services
         private XmlDocument FromTranslationLibrary(TranslationLibrary translationLibrary)
         {
             XmlDocument xmlDocument = new XmlDocument();
+            xmlDocument.AppendChild(xmlDocument.CreateXmlDeclaration("1.0", "UTF-8", null));
             XmlElement rootElement = xmlDocument.CreateElement("root");
             xmlDocument.AppendChild(rootElement);
 
