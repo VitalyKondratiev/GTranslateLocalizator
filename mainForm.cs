@@ -26,8 +26,6 @@ namespace GTranslateLocalizatorApp
         private TranslationLibrary sourceLibrary;
         private List<TranslationLibrary> translatedLibraries = new();
 
-        private List<string> translateLanguages = new();
-
         private const string FROM_LANGUAGE_BASE = "Russian";
 
         public mainForm()
@@ -50,17 +48,27 @@ namespace GTranslateLocalizatorApp
 
         private void generateButton_Click(object sender, EventArgs e)
         {
-            foreach (string destinationLanguage in translateLanguages)
+            bool scbState = sourceComboBox.Enabled;
+            bool lclbState = languagesCheckedListBox.Enabled;
+            bool sfobState = sourceFileOpenButton.Enabled;
+            sourceComboBox.Enabled = false;
+            languagesCheckedListBox.Enabled = false;
+            sourceFileOpenButton.Enabled = false;
+            saveButton.Enabled = false;
+            generateButton.Enabled = false;
+
+            translatedLibraries.Clear();
+            foreach (string destinationLanguage in languagesCheckedListBox.CheckedItems)
             {
-                if (destinationLanguage != string.Empty)
-                {
-                    translatedLibraries.Add(TranslateLibrary(sourceLibrary, destinationLanguage));
-                }
-                else
-                    DebugLog("Unknown value " + destinationLanguage);
+                translatedLibraries.Add(TranslateLibrary(sourceLibrary, destinationLanguage));
             }
             ShowTranslations();
+
+            sourceComboBox.Enabled = scbState;
+            languagesCheckedListBox.Enabled = lclbState;
+            sourceFileOpenButton.Enabled = sfobState;
             saveButton.Enabled = true;
+            generateButton.Enabled = true;
         }
 
         private void saveButton_Click(object sender, EventArgs e)
@@ -102,32 +110,14 @@ namespace GTranslateLocalizatorApp
             ).Result;
         }
 
-        private void languagesCheckedListBox_ItemCheck(object sender, ItemCheckEventArgs e)
-        {
-            bool itemState = !languagesCheckedListBox.GetItemChecked(e.Index);
-            var item = Language.LanguageDictionary.ToArray()[e.Index];
-            string language = item.Value.Name;
-            if (itemState)
-                translateLanguages.Add(language);
-            else
-            {
-                for (int i = 0; i < translateLanguages.Count; i++)
-                    if (translateLanguages[i] == language)
-                        translateLanguages.Remove(translateLanguages[i]);
-            }
-        }
-
         private void SetLanguages()
         {
             foreach (KeyValuePair<string, Language> kvp in Language.LanguageDictionary.ToList())
             {
                 sourceComboBox.Items.Add(kvp.Value.Name);
-                if (kvp.Value.Name == FROM_LANGUAGE_BASE)
-                {
-                    sourceComboBox.SelectedIndex = sourceComboBox.Items.Count - 1;
-                }
                 languagesCheckedListBox.Items.Add(kvp.Value.Name);
             }
+            sourceComboBox.SelectedItem = FROM_LANGUAGE_BASE;
         }
 
         private void ShowTranslations()
@@ -148,6 +138,7 @@ namespace GTranslateLocalizatorApp
                 Dock = DockStyle.Fill,
                 DataSource = new BindingSource(translationLibrary.Translations, null)
             };
+            dataGridView.ColumnHeadersVisible = false;
             dataGridView.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             tabPage.Controls.Add(dataGridView);
             translationsTabControl.TabPages.Add(tabPage);
@@ -192,8 +183,16 @@ namespace GTranslateLocalizatorApp
 
         private void DebugLog(string logText)
         {
-            if (logTextBox.Text.Length == 0) logTextBox.Text = logText;
-            else logTextBox.Text += $"\n{logText}";
+            logTextBox.Invoke((Action)(() =>
+            {
+                logTextBox.Text += $"{logText}\n";
+            }));
+        }
+
+        private void logTextBox_TextChanged(object sender, EventArgs e)
+        {
+            logTextBox.SelectionStart = logTextBox.Text.Length;
+            logTextBox.ScrollToCaret();
         }
     }
 }

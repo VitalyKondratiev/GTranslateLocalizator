@@ -41,6 +41,7 @@
             openFileDialog = new OpenFileDialog();
             logGroupBox = new GroupBox();
             translationsTabControl = new TabControl();
+            progressBar1 = new ProgressBar();
             sourceFileGroupBox.SuspendLayout();
             laguagesGroupBox.SuspendLayout();
             logGroupBox.SuspendLayout();
@@ -55,7 +56,7 @@
             sourceFileGroupBox.Controls.Add(sourceFileTextBox);
             sourceFileGroupBox.Location = new Point(12, 12);
             sourceFileGroupBox.Name = "sourceFileGroupBox";
-            sourceFileGroupBox.Size = new Size(1154, 85);
+            sourceFileGroupBox.Size = new Size(940, 85);
             sourceFileGroupBox.TabIndex = 0;
             sourceFileGroupBox.TabStop = false;
             sourceFileGroupBox.Text = "Source translations file";
@@ -66,6 +67,7 @@
             sourceComboBox.Location = new Point(107, 51);
             sourceComboBox.Name = "sourceComboBox";
             sourceComboBox.Size = new Size(222, 23);
+            sourceComboBox.Sorted = true;
             sourceComboBox.TabIndex = 3;
             // 
             // sourceLanguageLabel
@@ -80,7 +82,7 @@
             // sourceFileOpenButton
             // 
             sourceFileOpenButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            sourceFileOpenButton.Location = new Point(1069, 22);
+            sourceFileOpenButton.Location = new Point(859, 22);
             sourceFileOpenButton.Name = "sourceFileOpenButton";
             sourceFileOpenButton.Size = new Size(75, 23);
             sourceFileOpenButton.TabIndex = 1;
@@ -94,19 +96,21 @@
             sourceFileTextBox.Location = new Point(6, 22);
             sourceFileTextBox.Name = "sourceFileTextBox";
             sourceFileTextBox.ReadOnly = true;
-            sourceFileTextBox.Size = new Size(1057, 23);
+            sourceFileTextBox.Size = new Size(847, 23);
             sourceFileTextBox.TabIndex = 0;
             // 
             // languagesCheckedListBox
             // 
             languagesCheckedListBox.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            languagesCheckedListBox.BorderStyle = BorderStyle.FixedSingle;
+            languagesCheckedListBox.CheckOnClick = true;
             languagesCheckedListBox.FormattingEnabled = true;
             languagesCheckedListBox.IntegralHeight = false;
             languagesCheckedListBox.Location = new Point(6, 22);
             languagesCheckedListBox.Name = "languagesCheckedListBox";
-            languagesCheckedListBox.Size = new Size(155, 352);
+            languagesCheckedListBox.Size = new Size(155, 248);
+            languagesCheckedListBox.Sorted = true;
             languagesCheckedListBox.TabIndex = 1;
-            languagesCheckedListBox.ItemCheck += languagesCheckedListBox_ItemCheck;
             // 
             // laguagesGroupBox
             // 
@@ -114,18 +118,18 @@
             laguagesGroupBox.Controls.Add(languagesCheckedListBox);
             laguagesGroupBox.Location = new Point(12, 103);
             laguagesGroupBox.Name = "laguagesGroupBox";
-            laguagesGroupBox.Size = new Size(167, 380);
+            laguagesGroupBox.Size = new Size(167, 276);
             laguagesGroupBox.TabIndex = 2;
             laguagesGroupBox.TabStop = false;
             laguagesGroupBox.Text = "Destination languages";
             // 
             // generateButton
             // 
-            generateButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            generateButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             generateButton.Enabled = false;
-            generateButton.Location = new Point(12, 485);
+            generateButton.Location = new Point(675, 386);
             generateButton.Name = "generateButton";
-            generateButton.Size = new Size(167, 28);
+            generateButton.Size = new Size(127, 23);
             generateButton.TabIndex = 3;
             generateButton.Text = "Generate translations";
             generateButton.UseVisualStyleBackColor = true;
@@ -135,9 +139,9 @@
             // 
             saveButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             saveButton.Enabled = false;
-            saveButton.Location = new Point(1007, 490);
+            saveButton.Location = new Point(808, 386);
             saveButton.Name = "saveButton";
-            saveButton.Size = new Size(159, 23);
+            saveButton.Size = new Size(144, 23);
             saveButton.TabIndex = 4;
             saveButton.Text = "Save translatiions to files";
             saveButton.UseVisualStyleBackColor = true;
@@ -146,44 +150,62 @@
             // logTextBox
             // 
             logTextBox.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            logTextBox.Location = new Point(6, 22);
+            logTextBox.BackColor = SystemColors.ActiveCaptionText;
+            logTextBox.BorderStyle = BorderStyle.None;
+            logTextBox.ForeColor = SystemColors.MenuHighlight;
+            logTextBox.Location = new Point(6, 16);
+            logTextBox.Margin = new Padding(3, 3, 3, 13);
             logTextBox.Name = "logTextBox";
             logTextBox.ReadOnly = true;
-            logTextBox.Size = new Size(969, 77);
+            logTextBox.ScrollBars = RichTextBoxScrollBars.ForcedVertical;
+            logTextBox.Size = new Size(755, 83);
             logTextBox.TabIndex = 5;
             logTextBox.Text = "";
+            logTextBox.TextChanged += logTextBox_TextChanged;
             // 
             // logGroupBox
             // 
             logGroupBox.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             logGroupBox.Controls.Add(logTextBox);
-            logGroupBox.Location = new Point(185, 378);
+            logGroupBox.Location = new Point(185, 274);
             logGroupBox.Name = "logGroupBox";
-            logGroupBox.Size = new Size(981, 105);
+            logGroupBox.Size = new Size(767, 105);
             logGroupBox.TabIndex = 6;
             logGroupBox.TabStop = false;
             logGroupBox.Text = "Logs";
             // 
             // translationsTabControl
             // 
+            translationsTabControl.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             translationsTabControl.Location = new Point(185, 103);
             translationsTabControl.Name = "translationsTabControl";
             translationsTabControl.SelectedIndex = 0;
-            translationsTabControl.Size = new Size(981, 269);
+            translationsTabControl.Size = new Size(767, 165);
             translationsTabControl.TabIndex = 7;
+            // 
+            // progressBar1
+            // 
+            progressBar1.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            progressBar1.Location = new Point(12, 386);
+            progressBar1.Name = "progressBar1";
+            progressBar1.Size = new Size(657, 23);
+            progressBar1.TabIndex = 8;
             // 
             // mainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1178, 525);
+            ClientSize = new Size(964, 421);
+            Controls.Add(progressBar1);
             Controls.Add(translationsTabControl);
             Controls.Add(logGroupBox);
             Controls.Add(saveButton);
             Controls.Add(generateButton);
             Controls.Add(laguagesGroupBox);
             Controls.Add(sourceFileGroupBox);
+            MinimumSize = new Size(565, 460);
             Name = "mainForm";
+            StartPosition = FormStartPosition.CenterScreen;
             Text = "GTranslateLocalizator";
             sourceFileGroupBox.ResumeLayout(false);
             sourceFileGroupBox.PerformLayout();
@@ -211,5 +233,6 @@
         private TabControl translationsTabControl;
         private DataGridViewTextBoxColumn Column1;
         private DataGridViewTextBoxColumn Column2;
+        private ProgressBar progressBar1;
     }
 }
