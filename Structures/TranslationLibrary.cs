@@ -10,5 +10,10 @@
             Language = language;
             Translations = translations;
         }
+
+        public void SetLanguage(string language)
+        {
+            Language = language;
+        }
     }
 }

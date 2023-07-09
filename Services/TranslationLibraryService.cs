@@ -25,7 +25,6 @@ namespace GTranslateLocalizatorApp.Services
 
         public TranslationLibrary TranslateLibrary(TranslationLibrary sourceLibrary, string destinationLanguage)
         {
-            var translator = new AggregateTranslator();
             Dictionary<string, string> translatedLibrary = new Dictionary<string, string>();
 
             string sourceLanguage = sourceLibrary.Language;

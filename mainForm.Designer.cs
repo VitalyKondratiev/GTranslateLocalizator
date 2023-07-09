@@ -41,7 +41,8 @@
             openFileDialog = new OpenFileDialog();
             logGroupBox = new GroupBox();
             translationsTabControl = new TabControl();
-            progressBar1 = new ProgressBar();
+            progressBar = new ProgressBar();
+            saveImmediateCheckBox = new CheckBox();
             sourceFileGroupBox.SuspendLayout();
             laguagesGroupBox.SuspendLayout();
             logGroupBox.SuspendLayout();
@@ -69,6 +70,7 @@
             sourceComboBox.Size = new Size(222, 23);
             sourceComboBox.Sorted = true;
             sourceComboBox.TabIndex = 3;
+            sourceComboBox.SelectedIndexChanged += sourceComboBox_SelectedIndexChanged;
             // 
             // sourceLanguageLabel
             // 
@@ -183,20 +185,34 @@
             translationsTabControl.Size = new Size(767, 165);
             translationsTabControl.TabIndex = 7;
             // 
-            // progressBar1
+            // progressBar
             // 
-            progressBar1.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            progressBar1.Location = new Point(12, 386);
-            progressBar1.Name = "progressBar1";
-            progressBar1.Size = new Size(657, 23);
-            progressBar1.TabIndex = 8;
+            progressBar.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            progressBar.Location = new Point(12, 386);
+            progressBar.Name = "progressBar";
+            progressBar.Size = new Size(529, 23);
+            progressBar.TabIndex = 8;
+            // 
+            // saveImmediateCheckBox
+            // 
+            saveImmediateCheckBox.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            saveImmediateCheckBox.AutoSize = true;
+            saveImmediateCheckBox.Checked = true;
+            saveImmediateCheckBox.CheckState = CheckState.Checked;
+            saveImmediateCheckBox.Location = new Point(547, 389);
+            saveImmediateCheckBox.Name = "saveImmediateCheckBox";
+            saveImmediateCheckBox.Size = new Size(122, 19);
+            saveImmediateCheckBox.TabIndex = 9;
+            saveImmediateCheckBox.Text = "Save immediatelly";
+            saveImmediateCheckBox.UseVisualStyleBackColor = true;
             // 
             // mainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(964, 421);
-            Controls.Add(progressBar1);
+            Controls.Add(saveImmediateCheckBox);
+            Controls.Add(progressBar);
             Controls.Add(translationsTabControl);
             Controls.Add(logGroupBox);
             Controls.Add(saveButton);
@@ -212,6 +228,7 @@
             laguagesGroupBox.ResumeLayout(false);
             logGroupBox.ResumeLayout(false);
             ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
@@ -233,6 +250,7 @@
         private TabControl translationsTabControl;
         private DataGridViewTextBoxColumn Column1;
         private DataGridViewTextBoxColumn Column2;
-        private ProgressBar progressBar1;
+        private ProgressBar progressBar;
+        private CheckBox saveImmediateCheckBox;
     }
 }

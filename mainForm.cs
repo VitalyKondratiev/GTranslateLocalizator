@@ -7,6 +7,7 @@ namespace GTranslateLocalizatorApp
     using GTranslateLocalizatorApp.Services.Contracts;
     using GTranslateLocalizatorApp.Services;
     using GTranslateLocalizatorApp.Structures;
+    using System.ComponentModel;
 
     public partial class mainForm : Form
     {
@@ -16,6 +17,12 @@ namespace GTranslateLocalizatorApp
         private TranslationLibrary sourceLibrary;
         private List<TranslationLibrary> translatedLibraries = new();
 
+        BackgroundWorker worker;
+
+        bool scbState;
+        bool lclbState;
+        bool sfobState;
+
         public mainForm(ITranslationLibraryService appTranslatorService, IFileXmlService appXmlService)
         {
             InitializeComponent();
@@ -24,6 +31,12 @@ namespace GTranslateLocalizatorApp
             this.appXmlService = appXmlService;
 
             SetLanguages();
+
+            worker = new BackgroundWorker();
+            worker.DoWork += generateTranslations;
+            worker.RunWorkerCompleted += generateTranslationsCompleted;
+            worker.ProgressChanged += generateTranslationsProgressChanged;
+            worker.WorkerReportsProgress = true;
         }
 
         private void sourceFileOpenButton_Click(object sender, EventArgs e)
@@ -40,29 +53,60 @@ namespace GTranslateLocalizatorApp
 
         private void generateButton_Click(object sender, EventArgs e)
         {
-            bool scbState = sourceComboBox.Enabled;
-            bool lclbState = languagesCheckedListBox.Enabled;
-            bool sfobState = sourceFileOpenButton.Enabled;
+            scbState = sourceComboBox.Enabled;
+            lclbState = languagesCheckedListBox.Enabled;
+            sfobState = sourceFileOpenButton.Enabled;
             sourceComboBox.Enabled = false;
             languagesCheckedListBox.Enabled = false;
             sourceFileOpenButton.Enabled = false;
             saveButton.Enabled = false;
             generateButton.Enabled = false;
 
+            progressBar.Value = 0;
+            worker.RunWorkerAsync();
+        }
+
+        private void generateTranslations(object? sender, EventArgs e)
+        {
             translatedLibraries.Clear();
+            int processsed = 0;
             foreach (string destinationLanguage in languagesCheckedListBox.CheckedItems)
             {
                 translatedLibraries.Add(
                     appTranslatorService.TranslateLibrary(sourceLibrary, destinationLanguage)
                 );
+                processsed++;
+                worker.ReportProgress((int)((float)processsed / languagesCheckedListBox.CheckedItems.Count * 100), translatedLibraries);
             }
+        }
+        private void generateTranslationsProgressChanged(object? sender, ProgressChangedEventArgs e)
+        {
+            DebugLog($"Translated {e.ProgressPercentage}%");
+            progressBar.Value = e.ProgressPercentage;
             ShowTranslations();
+        }
+
+        private void generateTranslationsCompleted(object? sender, EventArgs e)
+        {
+            DebugLog("Generated succesfully!");
+            ShowTranslations();
+
+            var notifyIcon = new NotifyIcon();
+            notifyIcon.Icon = SystemIcons.Information;
+            notifyIcon.Visible = true;
+            notifyIcon.Text = "GTranslateLocalizator";
+            notifyIcon.ShowBalloonTip(3000, "GTranslateLocalizator", "All translations generated!", ToolTipIcon.Info);
 
             sourceComboBox.Enabled = scbState;
             languagesCheckedListBox.Enabled = lclbState;
             sourceFileOpenButton.Enabled = sfobState;
             saveButton.Enabled = true;
             generateButton.Enabled = true;
+
+            if (saveImmediateCheckBox.Checked)
+            {
+                saveButton_Click(worker, e);
+            }
         }
 
         private void saveButton_Click(object sender, EventArgs e)
@@ -134,6 +178,15 @@ namespace GTranslateLocalizatorApp
         {
             logTextBox.SelectionStart = logTextBox.Text.Length;
             logTextBox.ScrollToCaret();
+        }
+
+        private void sourceComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (openFileDialog.FileName != string.Empty)
+            {
+                sourceLibrary.SetLanguage(sourceComboBox.SelectedItem.ToString());
+                ShowTranslations();
+            }
         }
     }
 }
