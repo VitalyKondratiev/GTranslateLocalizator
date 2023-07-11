@@ -44,7 +44,7 @@ namespace GTranslateLocalizatorApp
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
                 sourceFileTextBox.Text = openFileDialog.FileName;
-                sourceLibrary = appXmlService.LoadFromFile(openFileDialog.FileName, sourceComboBox.SelectedItem.ToString());
+                sourceLibrary = appXmlService.LoadFromFile(openFileDialog.FileName, (LibreLanguage)sourceComboBox.SelectedItem);
                 generateButton.Enabled = true;
                 translatedLibraries.Clear();
                 ShowTranslations();
@@ -70,7 +70,7 @@ namespace GTranslateLocalizatorApp
         {
             translatedLibraries.Clear();
             int processsed = 0;
-            foreach (string destinationLanguage in languagesCheckedListBox.CheckedItems)
+            foreach (LibreLanguage destinationLanguage in languagesCheckedListBox.CheckedItems)
             {
                 translatedLibraries.Add(
                     appTranslatorService.TranslateLibrary(sourceLibrary, destinationLanguage)
@@ -114,7 +114,7 @@ namespace GTranslateLocalizatorApp
             string filePath = openFileDialog.FileName.Replace(openFileDialog.SafeFileName, "");
             foreach (TranslationLibrary translationLibrary in translatedLibraries)
             {
-                string fileName = $"{filePath}\\{translationLibrary.Language}.xml";
+                string fileName = $"{filePath}\\{translationLibrary.Language.name}.xml";
                 appXmlService.SaveToFile(translationLibrary, fileName);
             }
             DebugLog("Saving succesfully!");
@@ -122,12 +122,17 @@ namespace GTranslateLocalizatorApp
 
         private void SetLanguages()
         {
-            foreach (string language in appTranslatorService.GetLanguageList())
-            {
-                sourceComboBox.Items.Add(language);
-                languagesCheckedListBox.Items.Add(language);
-            }
-            sourceComboBox.SelectedItem = TranslationLibraryService.FromLanguageBase;
+            LibreLanguage[] languages = appTranslatorService.GetLanguageList();
+
+            sourceComboBox.DataSource = languages.Clone();
+            sourceComboBox.ValueMember = "code";
+            sourceComboBox.DisplayMember = "name";
+
+            languagesCheckedListBox.DataSource = languages.Clone();
+            languagesCheckedListBox.ValueMember = "code";
+            languagesCheckedListBox.DisplayMember = "name";
+
+            sourceComboBox.SelectedValue = TranslationLibraryService.FromLanguageBase;
         }
 
         private void ShowTranslations()
@@ -142,7 +147,7 @@ namespace GTranslateLocalizatorApp
 
         private void DrawTab(TranslationLibrary translationLibrary)
         {
-            var tabPage = new TabPage(translationLibrary.Language);
+            var tabPage = new TabPage(translationLibrary.Language.name);
             var dataGridView = new DataGridView
             {
                 Dock = DockStyle.Fill,
@@ -184,7 +189,7 @@ namespace GTranslateLocalizatorApp
         {
             if (openFileDialog.FileName != string.Empty)
             {
-                sourceLibrary.SetLanguage(sourceComboBox.SelectedItem.ToString());
+                sourceLibrary.SetLanguage((LibreLanguage)sourceComboBox.SelectedItem);
                 ShowTranslations();
             }
         }

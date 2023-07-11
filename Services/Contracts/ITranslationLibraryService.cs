@@ -4,8 +4,8 @@ namespace GTranslateLocalizatorApp.Services.Contracts
 {
     public interface ITranslationLibraryService
     {
-        public List<string> GetLanguageList();
+        public LibreLanguage[] GetLanguageList();
 
-        public TranslationLibrary TranslateLibrary(TranslationLibrary sourceLibrary, string destinationLanguage);
+        public TranslationLibrary TranslateLibrary(TranslationLibrary sourceLibrary, LibreLanguage destinationLanguage);
     }
 }

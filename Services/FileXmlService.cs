@@ -6,7 +6,7 @@ namespace GTranslateLocalizatorApp.Services
 {
     public class FileXmlService: IFileXmlService
     {
-        public TranslationLibrary LoadFromFile(string filePath, string language)
+        public TranslationLibrary LoadFromFile(string filePath, LibreLanguage language)
         {
             XmlDocument xmlDocument = new XmlDocument();
             xmlDocument.Load(filePath);
@@ -37,7 +37,7 @@ namespace GTranslateLocalizatorApp.Services
             return xmlDocument;
         }
 
-        private TranslationLibrary ToTranslationLibrary(XmlDocument file, string language)
+        private TranslationLibrary ToTranslationLibrary(XmlDocument file, LibreLanguage language)
         {
             Dictionary<string, string> sourceLibrary = new();
 
